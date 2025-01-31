@@ -1,0 +1,53 @@
+services:
+  gateway:
+    build:
+        context: ./APIGateway
+        dockerfile: Dockerfile
+    networks:
+        - gateway
+    ports:
+      - "8083:8083"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
+
+
+
+  eureka:
+    networks:
+        - gateway
+    ports:
+      - "8761:8761"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
+    build:
+        context: ./Eureka
+        dockerfile: Dockerfile
+  tasks:
+      networks:
+        - gateway
+      environment:
+            - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
+      depends_on:
+        - eureka
+        - gateway
+        - reporting
+      build:
+        context: ./SDT_Project_2
+        dockerfile: Dockerfile
+
+  reporting:
+      networks:
+        - gateway
+      environment:
+            - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka
+      depends_on:
+        - eureka
+        - gateway
+      build:
+            context: ./Reporting_and_Analytics
+            dockerfile: Dockerfile
+
+networks:
+  gateway: {
+    driver: bridge
+  }
